@@ -10,4 +10,9 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    server: {
+        host: '0.0.0.0',                   // ✅ Allows external access (needed for Gitpod)
+        strictPort: true,                  // ✅ Fixes port assignment
+        allowedHosts: ['.gitpod.io'],      // ✅ Prevents "host not allowed" error
+    },
 });
