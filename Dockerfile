@@ -18,7 +18,7 @@ COPY . /var/www/html
 # Set Apache's DocumentRoot to Laravel's public directory
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
-# Optional: clear default index.html if it exists (to avoid conflict)
+# Optional: remove default Apache index.html
 RUN rm -f /var/www/html/index.html
 
 # Install Composer
@@ -27,12 +27,19 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Create SQLite file (if needed)
-RUN touch /var/www/html/database/database.sqlite
+# Generate application key
+RUN php artisan key:generate --force
 
-# Set permissions
+# Create SQLite DB file
+RUN touch database/database.sqlite
+
+# Run migrations
+RUN php artisan migrate --force
+
+# Fix permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+    && chmod -R 755 /var/www/html/bootstrap/cache \
+    && chmod -R 755 /var/www/html/database
 
 EXPOSE 80
